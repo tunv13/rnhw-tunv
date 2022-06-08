@@ -24,6 +24,7 @@ You took the role to develop a React Native app which has the following features
 
 <img src="problem/3.png" width="300" />
 
+- App should have a floating button throughout screens to switch between light and dark mode.
 - When user taps on a country on the continent screen, show the country screen again
 - When user visits [rnhw://country/:code](rnhw://country/:code), show country screen
 - When user visits [rnhw://continent/:code](rnhw://continent/:code), show continent screen.
