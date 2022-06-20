@@ -1,4 +1,4 @@
-import { request, GraphQLClient, gql } from 'graphql-request'
+import { GraphQLClient, gql } from 'graphql-request'
 const baseURL = 'https://countries.trevorblades.com'
 const graphQLClient = new GraphQLClient(baseURL)
 const query = gql`
@@ -6,7 +6,7 @@ const query = gql`
         countries {
             code 
             emoji
-            emojiU
+            capital
             native
             phone
             name
@@ -17,6 +17,7 @@ const query = gql`
 type Country = {
     code: string,
     name: string,
+    capital:string,
     emoji: string
 }
 
