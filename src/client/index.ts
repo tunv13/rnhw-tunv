@@ -36,6 +36,22 @@ const queryWithContinent = gql`
     }
 `
 
+const queryWithCoutryCode = gql`
+    query getCountryByCode($code: ID!){
+        country(code:$code){
+            code 
+            emoji
+            capital
+            phone
+            name
+            continent {
+                name
+                code
+            }
+        }
+    }
+`
+
 type Country = {
     code: string,
     phone: string,
@@ -60,9 +76,20 @@ const getCountries = async (page: number, size: number) => {
     const { countries }: { countries: Array<Country> } = await graphQLClient.request(query)
     return countries.slice(page * size, page * size + size)
 }
+
+const getCountryByCode = async (code: string) => {
+
+    const variables = {
+        code
+    }
+    const {country} : {country:Country}= await graphQLClient.request(queryWithCoutryCode, variables)
+   return country
+    // return country
+}
 export type { Country };
 
 export {
+    getCountryByCode,
     getCountries,
     getCountriesWithContinent
 }

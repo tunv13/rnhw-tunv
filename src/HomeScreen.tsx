@@ -1,26 +1,49 @@
 import React from 'react';
 import { useEffect, useState } from 'react'
-import { FlatList, Text, SafeAreaView, View,Linking, TouchableOpacity } from 'react-native';
+import { FlatList, Text, SafeAreaView, View, Linking, TouchableOpacity } from 'react-native';
 import { Navigation, NavigationFunctionComponent } from 'react-native-navigation';
 import styled from 'styled-components/native';
 import { Country, getCountries } from './client';
 import { windowHeight, windowWidth } from './constants';
+import FloatButton from './FloatButton';
 import { getScreenStyle } from './misc/getScreenStyle';
-
+type Link = string | null
+type PropsRouter = { code: string }
+type CombinedPropsRouter = PropsRouter | Country
 export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
-
-  Linking.getInitialURL().then(res=>console.log(res))
 
   const [countries, setCountries] = useState<Array<Country>>([])
   const [page, setPage] = useState<number>(0)
-  const [size, setSize] = useState<number>(20)
+  const [size] = useState<number>(20)
   useEffect(() => {
-    fetch()
-  }, [page])
+    Linking.getInitialURL().then((link: Link) => {
+      if (link) {
+        const linkSplit = link.split('/')
+        if (linkSplit[2].toLocaleLowerCase() == 'country') {
+          sendToDetail({ code: linkSplit[3] })
+        } else if (linkSplit[2].toLocaleLowerCase() == 'continent') {
+          Navigation.push(props.componentId, {
+            component: {
+              name: 'ListCountryScreen',
+              passProps: {
+                continentCode: linkSplit[3],
+              }
+            }
+          });
+        }
+      } else {
+        fetch(0)
+      }
+    })
 
-  const fetch = () => {
+  }, [])
+
+  const fetch = (page: number) => {
     getCountries(page, size).then((res: Array<Country>) => {
-      setCountries(res)
+      setPage(page + 1)
+      setCountries(prevCountries => {
+        return [...prevCountries, ...res]
+      })
     })
   }
 
@@ -34,18 +57,12 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
     </React.Fragment>)
   }
 
-  const sendToDetail = (country: Country) => {
+  const sendToDetail = (country: CombinedPropsRouter) => {
     Navigation.push(props.componentId, {
       component: {
         name: 'DetailScreen',
         passProps: {
-          name: country.name,
           code: country.code,
-          capital: country.capital,
-          emoji: country.emoji,
-          phone: country.phone,
-          continentName: country?.continent?.name,
-          continentCode: country?.continent?.code
         }
       }
     });
@@ -61,9 +78,11 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
         height: 2,
       },
       shadowOpacity: 0.25,
+      maxWidth: windowWidth - 20,
       shadowRadius: 3.84,
       elevation: 3,
       paddingLeft: 5,
+      zIndex:1,
       flexDirection: 'row'
     }}
       onPress={sendToDetail.bind(null, item)}
@@ -72,22 +91,23 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
         fontSize: 90, height: 80, lineHeight: 65,
         paddingTop: 90 - (90 * 0.7),
       }}>{item.emoji}</Text>
-      <View style={{ flexDirection: 'column', justifyContent: 'center' }}>
+      <View style={{ flexDirection: 'column', justifyContent: 'center', maxWidth: windowWidth - 80 }}>
         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{item.name}</Text>
         <Text style={{ fontSize: 20, color: '#868686' }}>{item.capital}</Text>
       </View>
     </TouchableOpacity>
   }
 
-
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Root>
-
+        <FloatButton />
         <FlatList
           data={countries}
           keyExtractor={(item: Country) => item.code}
           {...{ renderItem, ListHeaderComponent }}
+          onEndReached={fetch.bind(null, page + 1)}
+          onEndReachedThreshold={0.5}
         />
       </Root>
     </SafeAreaView>

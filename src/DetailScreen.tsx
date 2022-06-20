@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native'
-import React from 'react'
-import { Country } from './client'
+import React, { useEffect, useState } from 'react'
+import { Country, getCountryByCode } from './client'
 import styled from 'styled-components/native'
 import { windowWidth } from './constants'
 import { Navigation } from 'react-native-navigation'
@@ -13,35 +13,39 @@ type Props = {
 
 type CombinedProps = Country & Props
 
-export default function DetailScreen({ componentId, code, name, emoji, phone, continentName, continentCode }: CombinedProps) {
+export default function DetailScreen({ componentId, code }: CombinedProps) {
+    const [country, setCountry] = useState<Country>()
 
+    useEffect(() => {
+        getCountryByCode(code).then(country => setCountry(country))
+    }, [code])
     const viewList = () => {
         Navigation.push(componentId, {
             component: {
                 name: 'ListCountryScreen',
                 passProps: {
-                    continentCode,
-                    continentName
+                    continentName:country?.continent?.name,
+                    continentCode: country?.continent?.code
                 }
             }
         })
     }
     return (
         <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-            <Text style={{ fontSize: 80 }}>{emoji}</Text>
-            <Text style={{ fontSize: 24, fontWeight: 'bold' }}>{name}</Text>
+            <Text style={{ fontSize: 80 }}>{country?.emoji}</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold' }}>{country?.name}</Text>
             <Row>
                 <Text>alpha2Code</Text>
                 <Text>{code}</Text>
             </Row>
             <Row>
                 <Text>callingCodes</Text>
-                <Text>+{phone}</Text>
+                <Text>+{country?.phone}</Text>
             </Row>
             <Row>
                 <Text>alpha2Code</Text>
                 <TouchableOpacity onPress={viewList}>
-                    <Text style={{ textDecorationLine: 'underline', color: 'blue' }}>{continentName}</Text>
+                    <Text style={{ textDecorationLine: 'underline', color: 'blue' }}>{country?.continent?.name}</Text>
                 </TouchableOpacity>
             </Row>
         </View>

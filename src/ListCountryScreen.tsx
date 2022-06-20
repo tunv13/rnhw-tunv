@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components/native'
 import { windowWidth } from './constants'
 import { Country, getCountriesWithContinent } from './client'
@@ -7,15 +7,21 @@ import { Navigation } from 'react-native-navigation'
 type PropsListCountry = {
   continentCode: string
   continentName: string
-  componentId:string
+  componentId: string
 }
-export default function ListCountryScreen({ componentId,continentCode, continentName }: PropsListCountry) {
+export default function ListCountryScreen({ componentId, continentCode, continentName }: PropsListCountry) {
   const [countries, setCountries] = React.useState<Array<Country>>([])
+  const [continentDisplayName, setContinentDisplayName] = useState<string>(continentName)
   useEffect(() => {
-    getCountriesWithContinent(continentCode).then(res => setCountries(res))
+    getCountriesWithContinent(continentCode).then(res => {
+      setCountries(res)
+      if (Array.isArray(res) && res.length > 0) {
+        setContinentDisplayName(res[0].continent.name)
+      }
+    })
   }, [continentCode])
 
-  const pressCountry = (country:Country) => {
+  const pressCountry = (country: Country) => {
     Navigation.push(componentId, {
       component: {
         name: 'DetailScreen',
@@ -35,7 +41,7 @@ export default function ListCountryScreen({ componentId,continentCode, continent
   return (
     <ScrollView>
       <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
-        <Text style={{ fontSize: 30, fontWeight: 'bold', margin: 10 }}>{continentName}</Text>
+        <Text style={{ fontSize: 30, fontWeight: 'bold', margin: 10 }}>{continentDisplayName}</Text>
         <Row>
           <Text>alpha2Code</Text>
           <Text>{continentCode}</Text>
@@ -44,7 +50,7 @@ export default function ListCountryScreen({ componentId,continentCode, continent
           <Text>countries</Text>
           <View>
             {countries.map(item => <TouchableOpacity
-            key={item.code}
+              key={item.code}
               onPress={pressCountry.bind(null, item)}
             ><Text style={{
               textAlign: 'right',
