@@ -1,6 +1,6 @@
 import React from 'react';
 import { useEffect, useState } from 'react'
-import { FlatList, Text, SafeAreaView, View, TouchableOpacity } from 'react-native';
+import { FlatList, Text, SafeAreaView, View,Linking, TouchableOpacity } from 'react-native';
 import { Navigation, NavigationFunctionComponent } from 'react-native-navigation';
 import styled from 'styled-components/native';
 import { Country, getCountries } from './client';
@@ -8,6 +8,9 @@ import { windowHeight, windowWidth } from './constants';
 import { getScreenStyle } from './misc/getScreenStyle';
 
 export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
+
+  Linking.getInitialURL().then(res=>console.log(res))
+
   const [countries, setCountries] = useState<Array<Country>>([])
   const [page, setPage] = useState<number>(0)
   const [size, setSize] = useState<number>(20)
