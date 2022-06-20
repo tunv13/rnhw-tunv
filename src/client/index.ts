@@ -7,18 +7,51 @@ const query = gql`
             code 
             emoji
             capital
-            native
             phone
             name
+            continent {
+                name
+                code
+            }
         }
    }
 `
 
+const queryWithContinent = gql`
+    query getCountries($title: String!){
+        countries(filter: {
+            continent: {
+                eq:$title
+            }}) {
+            code 
+            emoji
+            capital
+            phone
+            name
+            continent {
+                name
+                code
+            }
+        }
+    }
+`
+
 type Country = {
     code: string,
+    phone: string,
     name: string,
-    capital:string,
+    capital: string,
     emoji: string
+    continent: { name: string, code: string }
+}
+
+const getCountriesWithContinent = async (title: string) => {
+
+    const variables = {
+        title
+    }
+    const { countries }: { countries: Array<Country> } = await graphQLClient.request(queryWithContinent, variables)
+    return countries
 }
 
 
@@ -30,5 +63,6 @@ const getCountries = async (page: number, size: number) => {
 export type { Country };
 
 export {
-    getCountries
+    getCountries,
+    getCountriesWithContinent
 }

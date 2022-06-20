@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { FlatList, Text, Dimensions, SafeAreaView, View, Touchable, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { useEffect, useState } from 'react'
+import { FlatList, Text, SafeAreaView, View, TouchableOpacity } from 'react-native';
 import { Navigation, NavigationFunctionComponent } from 'react-native-navigation';
 import styled from 'styled-components/native';
 import { Country, getCountries } from './client';
+import { windowHeight, windowWidth } from './constants';
 import { getScreenStyle } from './misc/getScreenStyle';
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
   const [countries, setCountries] = useState<Array<Country>>([])
@@ -31,6 +31,23 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
     </React.Fragment>)
   }
 
+  const sendToDetail = (country: Country) => {
+    Navigation.push(props.componentId, {
+      component: {
+        name: 'DetailScreen',
+        passProps: {
+          name: country.name,
+          code: country.code,
+          capital: country.capital,
+          emoji: country.emoji,
+          phone: country.phone,
+          continentName: country?.continent?.name,
+          continentCode: country?.continent?.code
+        }
+      }
+    });
+  }
+
   const renderItem = ({ item, index }: { item: Country, index: number }) => {
     return <TouchableOpacity style={{
       margin: 10,
@@ -46,14 +63,7 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
       paddingLeft: 5,
       flexDirection: 'row'
     }}
-      onPress={() => {
-        // console.log(props)
-        Navigation.push(props.componentId, {
-          component: {
-            name: 'CountryDetailScreen'
-          }
-        })
-      }}
+      onPress={sendToDetail.bind(null, item)}
     >
       <Text style={{
         fontSize: 90, height: 80, lineHeight: 65,
