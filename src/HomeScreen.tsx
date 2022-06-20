@@ -1,15 +1,37 @@
-import React from 'react';
-import {Text} from 'react-native';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import React, { useEffect, useState } from 'react';
+import { FlatList, Text, SafeAreaView } from 'react-native';
+import { NavigationFunctionComponent } from 'react-native-navigation';
 import styled from 'styled-components/native';
-import {getScreenStyle} from './misc/getScreenStyle';
+import { Country, getCountries } from './client';
+import { getScreenStyle } from './misc/getScreenStyle';
 
 export const HomeScreen: NavigationFunctionComponent<Props> = () => {
+  const [countries, setCountries] = useState<Array<Country>>([])
+  useEffect(() => {
+    getCountries(0, 20).then((res: Array<Country>) => {
+      setCountries(res)
+    })
+  }, [])
+
+
+
   return (
-    <Root>
-      <Title>Welcome to RN lab!</Title>
-      <Text>Your journey starts here</Text>
-    </Root>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Root>
+   
+        <FlatList
+          keyExtractor={(item: Country) => item.code}
+          renderItem={({ item, index }: { item: Country, index: number }) => {
+            return <>
+              <Text>{item.code}</Text>
+              <Text>{item.name}</Text>
+
+            </>
+          }}
+          data={countries}
+        />
+      </Root>
+    </SafeAreaView>
   );
 };
 
