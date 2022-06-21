@@ -1,19 +1,22 @@
 import React from 'react';
 import { useEffect, useState } from 'react'
-import { FlatList, Text, SafeAreaView, View, Linking, TouchableOpacity } from 'react-native';
+import { FlatList, Text, SafeAreaView, View, Linking, TouchableOpacity, StyleSheet } from 'react-native';
 import { Navigation, NavigationFunctionComponent } from 'react-native-navigation';
-import styled from 'styled-components/native';
 import { Country, getCountries } from './client';
 import { windowHeight, windowWidth } from './constants';
 import FloatButton from './FloatButton';
+import { getTheme, setTheme, ValueTheme } from './helpers/storage';
 import { getScreenStyle } from './misc/getScreenStyle';
 type Link = string | null
 type PropsRouter = { code: string }
+type Props = {}
 type CombinedPropsRouter = PropsRouter | Country
 export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
 
   const [countries, setCountries] = useState<Array<Country>>([])
+  const [theme, setThemeState] = useState(ValueTheme.LIGHT)
   const [page, setPage] = useState<number>(0)
+
   const [size] = useState<number>(20)
   useEffect(() => {
     Linking.getInitialURL().then((link: Link) => {
@@ -34,9 +37,20 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
       } else {
         fetch(0)
       }
-    })
 
+      checkTheme()
+    })
   }, [])
+
+  const checkTheme = async () => {
+    const theme = await getTheme()
+    setThemeState(theme == ValueTheme.DARK ? theme : ValueTheme.LIGHT)
+  }
+
+  const changeTheme = (value: ValueTheme) => {
+    setTheme(value)
+    setThemeState(value)
+  }
 
   const fetch = (page: number) => {
     getCountries(page, size).then((res: Array<Country>) => {
@@ -71,8 +85,8 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
   const renderItem = ({ item, index }: { item: Country, index: number }) => {
     return <TouchableOpacity style={{
       margin: 10,
-      backgroundColor: '#ffffff',
-      shadowColor: "#000",
+      backgroundColor: theme == ValueTheme.DARK ? "black" : 'white',
+      shadowColor: theme == ValueTheme.DARK ?"#fff":"#000",
       shadowOffset: {
         width: 0,
         height: 2,
@@ -82,7 +96,7 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
       shadowRadius: 3.84,
       elevation: 3,
       paddingLeft: 5,
-      zIndex:1,
+      zIndex: 1,
       flexDirection: 'row'
     }}
       onPress={sendToDetail.bind(null, item)}
@@ -92,7 +106,10 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
         paddingTop: 90 - (90 * 0.7),
       }}>{item.emoji}</Text>
       <View style={{ flexDirection: 'column', justifyContent: 'center', maxWidth: windowWidth - 80 }}>
-        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{item.name}</Text>
+        <Text style={{
+          fontSize: 20, fontWeight: 'bold', color: theme == ValueTheme.DARK ? "white"
+            : 'black'
+        }}>{item.name}</Text>
         <Text style={{ fontSize: 20, color: '#868686' }}>{item.capital}</Text>
       </View>
     </TouchableOpacity>
@@ -100,8 +117,12 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Root>
-        <FloatButton />
+      <View style={[styles.root, theme == ValueTheme.DARK && {
+        backgroundColor: 'black'
+      }]}>
+        <FloatButton theme={theme}
+          changeTheme={changeTheme}
+        />
         <FlatList
           data={countries}
           keyExtractor={(item: Country) => item.code}
@@ -109,21 +130,20 @@ export const HomeScreen: NavigationFunctionComponent<Props> = (props) => {
           onEndReached={fetch.bind(null, page + 1)}
           onEndReachedThreshold={0.5}
         />
-      </Root>
+      </View>
     </SafeAreaView>
   );
 };
 
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#fafafa',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+})
 //#region
-type Props = {};
-
-const Root = styled.View`
-  flex: 1;
-  background-color: #fafafa;
-  align-items: center;
-  justify-content: center;
-`;
-
 
 HomeScreen.options = getScreenStyle();
 //#endregion
